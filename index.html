@@ -1,0 +1,330 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);color:var(--color-text-primary);background:transparent}
+.wrap{padding:.8rem .5rem 2rem}
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.hdr h1{font-size:17px;font-weight:500}
+.hdr p{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.today-pill{background:#7F77DD;color:#fff;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.prog-card{background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.prog-top{display:flex;justify-content:space-between;margin-bottom:8px}
+.prog-top span{font-size:12px;color:var(--color-text-secondary)}
+.prog-top strong{font-size:16px;font-weight:500}
+.prog-track{height:6px;background:var(--color-border-tertiary);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.prog-fill{height:100%;background:linear-gradient(90deg,#7F77DD,#1D9E75);border-radius:3px;transition:width .4s}
+.phase-row{display:flex;flex-wrap:wrap;gap:5px}
+.ph{font-size:10px;font-weight:500;padding:2px 8px;border-radius:12px}
+.alert{background:#fff8e6;border:1px solid #f0c040;border-left:3px solid #e6a800;border-radius:10px;padding:10px 12px;margin-bottom:12px;display:none;gap:8px;align-items:flex-start}
+.alert.on{display:flex}
+.alert strong{font-size:12px;font-weight:500;color:#7a5000;display:block;margin-bottom:2px}
+.alert p{font-size:11px;color:#7a5000;opacity:.9;line-height:1.5}
+.month-lbl{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;padding-left:2px}
+.cal-hdr{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;margin-bottom:3px}
+.ch{text-align:center;font-size:10px;font-weight:500;color:var(--color-text-tertiary);padding:3px 0}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;margin-bottom:14px}
+.day{background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);border-radius:8px;padding:6px 5px 7px;min-height:82px;cursor:pointer;display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden;transition:border-color .15s}
+.day:hover{border-color:var(--color-border-secondary)}
+.day.past{opacity:.42;filter:grayscale(.3)}
+.day.done{opacity:.6}
+.day.done::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(29,158,117,.06) 5px,rgba(29,158,117,.06) 6px)}
+.day.missed{border-color:#E24B4A!important;opacity:.75}
+.day.today{border:2px solid #7F77DD}
+.day.jourj{border:2px solid #E24B4A}
+.day.future{background:var(--color-background-secondary)}
+.day.empty{background:transparent;border-color:transparent;cursor:default;pointer-events:none}
+.day-top{display:flex;justify-content:space-between;align-items:flex-start}
+.d-num{font-size:12px;font-weight:500}
+.d-mois{font-size:9px;color:var(--color-text-tertiary)}
+.d-num-today{background:#7F77DD;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500}
+.d-badge{font-size:9px;font-weight:500;padding:2px 4px;border-radius:4px;line-height:1.2;max-width:46px;text-align:center}
+.d-title{font-size:9px;color:var(--color-text-secondary);line-height:1.3;flex:1}
+.d-pb{height:2px;background:var(--color-border-tertiary);border-radius:1px;margin-top:2px;overflow:hidden}
+.d-pb-fill{height:100%;background:#1D9E75;border-radius:1px;transition:width .3s}
+.d-time{font-size:9px;color:var(--color-text-tertiary);margin-top:auto;padding-top:3px;border-top:1px solid var(--color-border-tertiary)}
+.d-status{position:absolute;bottom:5px;right:5px;width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px}
+.s-done{background:#1D9E75;color:#fff}
+.s-miss{background:#E24B4A;color:#fff}
+.s-rep{background:#e6a800;color:#fff}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:12px}
+.overlay.on{display:flex}
+.modal{background:var(--color-background-primary);border-radius:12px;width:100%;max-width:420px;max-height:88vh;overflow-y:auto}
+.m-head{padding:16px 16px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.m-head h2{font-size:15px;font-weight:500;line-height:1.3}
+.m-close{background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:14px;color:var(--color-text-secondary);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.m-meta{padding:8px 16px 10px;display:flex;flex-wrap:wrap;gap:6px}
+.m-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:12px}
+.m-time{font-size:11px;color:var(--color-text-secondary);background:var(--color-background-secondary);padding:2px 8px;border-radius:12px}
+.m-body{padding:0 16px 16px}
+.m-sec{font-size:10px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.t-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--color-border-tertiary)}
+.t-row:last-child{border-bottom:none}
+.t-cb{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--color-border-secondary);flex-shrink:0;cursor:pointer;margin-top:1px;appearance:none;-webkit-appearance:none;background:var(--color-background-secondary);transition:background .12s}
+.t-cb:checked{background:#1D9E75;border-color:#1D9E75;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 6l3 3 5-5' stroke='%23fff' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-size:11px;background-repeat:no-repeat;background-position:center}
+.t-lbl{font-size:12px;line-height:1.5;cursor:pointer;flex:1;color:var(--color-text-primary)}
+.t-lbl.done{text-decoration:line-through;color:var(--color-text-tertiary)}
+.tip{background:var(--color-background-secondary);border-left:3px solid #7F77DD;padding:8px 12px;border-radius:0 7px 7px 0;font-size:11px;color:var(--color-text-secondary);line-height:1.5;margin:10px 0 0}
+.m-warn{background:#fff8e6;border:1px solid #f0c040;border-radius:7px;padding:7px 10px;font-size:11px;color:#7a5000;margin-bottom:10px}
+.m-rep-notice{background:#e8f5f0;border:1px solid #9FE1CB;border-radius:7px;padding:7px 10px;font-size:11px;color:#085041;margin-bottom:10px}
+.m-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.btn{padding:8px 14px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);transition:opacity .15s}
+.btn:hover{opacity:.8}
+.btn-ok{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.btn-rep{background:#e6a800;color:#fff;border-color:#e6a800}
+</style>
+
+<div class="wrap">
+  <div class="hdr">
+    <div><h1>🎤 Mon oral de français</h1><p id="sub">Oral le 3 avril 2025</p></div>
+    <div class="today-pill" id="pill">...</div>
+  </div>
+  <div class="prog-card">
+    <div class="prog-top"><span>Progression</span><strong id="pct">0%</strong></div>
+    <div class="prog-track"><div class="prog-fill" id="pfill" style="width:0%"></div></div>
+    <div class="phase-row" id="phases"></div>
+  </div>
+  <div class="alert" id="alert"><span style="font-size:16px;flex-shrink:0">⚠️</span><div><strong id="atitle"></strong><p id="abody"></p></div></div>
+  <div id="root"></div>
+</div>
+
+<div class="overlay" id="ov" onclick="ovck(event)">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+const DAYS=[
+  {id:'d19',date:'2025-03-19',l:'19',m:'mars',phase:'Phase 1',bg:'#EEEDFE',col:'#3C3489',title:'Inventaire + textes 1→8',time:'🟢 2–3h',
+   tasks:['Rassemble TOUS tes textes, analyses et fiches','Imprime les 20 textes en version vierge','Prépare : 1 surligneur · textes annotés · textes vierges','Surlignage des textes vierges 1→8 (même couleur)','Verso : Introduction / Problématique / Conclusion'],
+   tip:"Texte annoté à côté → tu surlignes le vierge. Rien d'écrit, juste du surligneur. Verso = 3 cases."},
+  {id:'d20',date:'2025-03-20',l:'20',m:'mars',phase:'Micro',bg:'#FBEAF0',col:'#72243E',title:'Œuvre intégrale',time:'🟡 15 min · cours 7h–17h30',
+   tasks:['Relis 2-3 passages clés de ton œuvre','Récite quelques passages de mémoire','Note les thèmes principaux'],
+   tip:"15 min dans les transports, c'est suffisant. Pas de pression !"},
+  {id:'d21',date:'2025-03-21',l:'21',m:'mars',phase:'Phase 1',bg:'#EEEDFE',col:'#3C3489',title:'Textes 9→16',time:'🟢 ~2h · dès 15h25',
+   tasks:['Surlignage des textes vierges 9→16','Verso en 3 parties pour chacun','~25 min par texte'],
+   tip:"Tu rentres à 15h25 → largement le temps de faire 8 textes en soirée."},
+  {id:'d22',date:'2025-03-22',l:'22',m:'mars',phase:'Phase 1',bg:'#EEEDFE',col:'#3C3489',title:'Textes 17→20 + relecture',time:'🟢 3–4h',
+   tasks:['Finalise les 4 derniers textes','Relis toutes tes 20 feuilles d\'une traite','Comble les trous si besoin','Résultat : 20 feuilles = ton seul outil de révision !'],
+   tip:"Phase 1 terminée ! Plus besoin de sortir tous tes cours. 🎉"},
+  {id:'d23',date:'2025-03-23',l:'23',m:'mars',phase:'Phase 2',bg:'#E1F5EE',col:'#085041',title:'Flashcards textes 1→10',time:'🟢 2–3h',
+   tasks:['Empile tes 20 textes','Texte par texte : énonce intro + pbq + conclusion','Retourne pour vérifier','Juste = pile à part · Faux = remis en dessous','Objectif : tous dans la pile juste','+ 10 min sur l\'œuvre intégrale'],
+   tip:"Si tu bloques, relis vite le verso. Pas plus de 2 min par texte."},
+  {id:'d24',date:'2025-03-24',l:'24',m:'mars',phase:'Micro',bg:'#FBEAF0',col:'#72243E',title:'Révision mentale 2-3 textes',time:'🟡 15 min · cours 7h–18h45',
+   tasks:['Récite intro + pbq + ccl de 2-3 textes sans regarder','Idéal dans les transports'],
+   tip:"Cours jusqu'à 18h45. Micro-session uniquement, pas de culpabilité !"},
+  {id:'d25',date:'2025-03-25',l:'25',m:'mars',phase:'Micro',bg:'#FBEAF0',col:'#72243E',title:'Œuvre intégrale',time:'🟡 15 min · cours 7h–18h45',
+   tasks:['Relis des passages de ton œuvre','Prépare 2-3 arguments pour l\'entretien','Pense aux thèmes, personnages, enjeux'],
+   tip:"Cours jusqu'à 18h45."},
+  {id:'d26',date:'2025-03-26',l:'26',m:'mars',phase:'Phase 2',bg:'#E1F5EE',col:'#085041',title:'Flashcards textes 11→20',time:'🟢 ~2h · dès 14h15',
+   tasks:['Même méthode piles pour les textes 11→20','Objectif : tous dans la pile juste','Si temps dispo : enchaîne les 20 d\'un coup','+ 10 min sur l\'œuvre intégrale'],
+   tip:"Tu rentres à 14h15 → profite de l'après-midi !"},
+  {id:'d27',date:'2025-03-27',l:'27',m:'mars',phase:'Micro',bg:'#FBEAF0',col:'#72243E',title:'Textes difficiles seulement',time:'🟡 15 min · cours 7h–17h30',
+   tasks:['Reprends 2-3 textes difficiles','Lis le verso, ferme les yeux, récite, vérifie'],
+   tip:"Cours variable jusqu'à 17h30."},
+  {id:'d28',date:'2025-03-28',l:'28',m:'mars',phase:'Phase 3',bg:'#FAEEDA',col:'#633806',title:'Flashcards analyse 1→10',time:'🟢 ~2h · dès 15h25',
+   tasks:['Même méthode piles sur les ANALYSES','Figures de style, procédés, effets pour chaque texte','Pile juste / pile à revoir'],
+   tip:"Phase la plus technique. Si tu bloques, relis le recto annoté."},
+  {id:'d29',date:'2025-03-29',l:'29',m:'mars',phase:'Phase 3',bg:'#FAEEDA',col:'#633806',title:'Analyse 11→20 + passage complet',time:'🟢 3–4h',
+   tasks:['Textes 11→20 : méthode piles sur les analyses','Passage complet des 20 textes d\'un coup','Session la plus intense — c\'est là que tout se grave !'],
+   tip:"Après ça, les analyses sont dans ta tête pour de bon. 💪"},
+  {id:'d30',date:'2025-03-30',l:'30',m:'mars',phase:'Phase 4',bg:'#FAECE7',col:'#712B13',title:'Simulation orale — 3 textes chrono',time:'🟢 2–3h',
+   tasks:['Tire 3 textes au sort','30 min de prépa au CHRONO pour chacun','12 min d\'oral à voix haute : lecture + explication + grammaire','Enregistre-toi si possible','Présente le texte vierge avant d\'annoter'],
+   tip:"Première vraie simulation ! Objectif : se chronométrer et parler à voix haute."},
+  {id:'d31',date:'2025-03-31',l:'31',m:'mars',phase:'Micro',bg:'#FBEAF0',col:'#72243E',title:"Arguments pour l'entretien",time:'🟡 15 min · cours 7h–18h45',
+   tasks:['Prépare 3 arguments pour défendre ton point de vue','Formule-les à voix haute (transports, douche…)','Pense aux questions possibles de l\'examinateur'],
+   tip:"Cours jusqu'à 18h45."},
+  {id:'d1',date:'2025-04-01',l:'1',m:'avr',phase:'Micro',bg:'#FBEAF0',col:'#72243E',title:'Textes difficiles + check matériel',time:'🟡 15 min · cours 7h–18h45',
+   tasks:['Récite tes textes les plus difficiles de mémoire','Convocation ✓  Carte d\'identité ✓  Œuvres ✓','Stylos ✓  Surligneurs ✓  Montre ✓'],
+   tip:"Dernier jour intense — demain c'est chill !"},
+  {id:'d2',date:'2025-04-02',l:'2',m:'avr',phase:'J-1',bg:'#E6F1FB',col:'#0C447C',title:'Relecture légère + sac prêt',time:'🟢 1–2h · dès 14h15',
+   tasks:['Relis tes 20 textes tranquillement pour te rassurer','Convocation + carte d\'identité dans le sac','Œuvres intégrales + photocopies des lectures','Document récapitulatif du prof','Stylos · surligneurs · montre','Couche-toi tôt ce soir !'],
+   tip:"Pas de révision intensive. Ton cerveau consolide tout seul. 😌"},
+  {id:'d3',date:'2025-04-03',l:'3',m:'avr',phase:'Jour J',bg:'#fff0f0',col:'#A32D2D',title:'ORAL DU BAC',time:'',
+   tasks:['Présente le texte VIERGE avant d\'annoter','30 min de prépa — gère ton temps, brouillon','Lis à voix haute (soignée et audible)','12 min : explication linéaire + grammaire','8 min : présente ton œuvre + défends ton point de vue','Souris, respire — tu connais tout ça 💪'],
+   tip:"Tu as bossé 16 jours sérieusement. Tu vas tout déchirer ! 💜"},
+];
+
+const GRID_M=[null,null,'d19','d20','d21','d22','d23','d24','d25','d26','d27','d28','d29','d30'];
+const GRID_A=['d31','d1','d2','d3',null,null,null];
+
+function nowStr(){
+  const n=new Date();
+  return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+}
+function isPast(d){return d<nowStr()}
+function isToday(d){return d===nowStr()}
+function isFuture(d){return d>nowStr()}
+
+let ST={};
+try{ST=JSON.parse(localStorage.getItem('oral_bac_fix')||'{}')}catch(e){}
+function save(){try{localStorage.setItem('oral_bac_fix',JSON.stringify(ST))}catch(e){}}
+
+function isDone(id){
+  const d=DAYS.find(x=>x.id===id);if(!d)return false;
+  const s=ST[id]||{};
+  const rep=ST['rep_'+id]||[];
+  const total=d.tasks.length+rep.length;
+  return Array.from({length:total},(_,i)=>s[i]).every(Boolean);
+}
+function getMissed(){return DAYS.filter(d=>isPast(d.date)&&!isDone(d.id)&&d.phase!=='Jour J')}
+
+function dayEl(id){
+  if(!id)return'<div class="day empty"></div>';
+  const d=DAYS.find(x=>x.id===id);
+  if(!d)return'<div class="day empty"></div>';
+  const past=isPast(d.date),tod=isToday(d.date),fut=isFuture(d.date);
+  const done=isDone(id),missed=past&&!done&&d.phase!=='Jour J';
+  const rep=ST['rep_'+id]||[];
+  const s=ST[id]||{};
+  const total=d.tasks.length+rep.length;
+  const checked=Array.from({length:total},(_,i)=>s[i]).filter(Boolean).length;
+  const pct=total?Math.round(checked/total*100):0;
+  let cls='day';
+  if(d.phase==='Jour J')cls+=' jourj';
+  else if(past&&done)cls+=' done past';
+  else if(missed)cls+=' missed past';
+  else if(tod)cls+=' today';
+  else if(past)cls+=' past';
+  else cls+=' future';
+  const numEl=tod
+    ?`<div class="d-num-today">${d.l}</div>`
+    :`<div><div class="d-num">${d.l}</div><div class="d-mois">${d.m}</div></div>`;
+  let status='';
+  if(past&&done)status='<div class="d-status s-done">✓</div>';
+  else if(missed)status='<div class="d-status s-miss">!</div>';
+  const repNote=rep.length?`<div style="font-size:9px;color:#e6a800;margin-top:1px">+${rep.length} reportée${rep.length>1?'s':''}</div>`:'';
+  return`<div class="${cls}" onclick="openM('${id}')">
+    ${status}
+    <div class="day-top">${numEl}<span class="d-badge" style="background:${d.bg};color:${d.col}">${d.phase}</span></div>
+    <div class="d-title">${d.title}</div>
+    ${repNote}
+    <div class="d-pb"><div class="d-pb-fill" style="width:${pct}%"></div></div>
+    <div class="d-time">${d.time||'🎤 Oral !'}</div>
+  </div>`;
+}
+
+function buildCal(){
+  const h='<div class="cal-hdr"><div class="ch">Lun</div><div class="ch">Mar</div><div class="ch">Mer</div><div class="ch">Jeu</div><div class="ch">Ven</div><div class="ch">Sam</div><div class="ch">Dim</div></div>';
+  document.getElementById('root').innerHTML=
+    `<div class="month-lbl">Mars 2025</div>${h}<div class="cal">${GRID_M.map(dayEl).join('')}</div>`+
+    `<div class="month-lbl">Avril 2025</div>${h}<div class="cal">${GRID_A.map(dayEl).join('')}</div>`;
+}
+
+function buildProg(){
+  const all=DAYS.filter(d=>d.phase!=='Jour J');
+  const total=all.reduce((a,d)=>a+d.tasks.length,0);
+  const done=all.reduce((a,d)=>{const s=ST[d.id]||{};return a+d.tasks.filter((_,i)=>s[i]).length;},0);
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('pct').textContent=pct+'%';
+  document.getElementById('pfill').style.width=pct+'%';
+  const PH=[['Phase 1','#EEEDFE','#3C3489'],['Phase 2','#E1F5EE','#085041'],['Phase 3','#FAEEDA','#633806'],['Phase 4','#FAECE7','#712B13']];
+  document.getElementById('phases').innerHTML=PH.map(([ph,bg,col])=>{
+    const pd=DAYS.filter(d=>d.phase===ph);
+    const pt=pd.reduce((a,d)=>a+d.tasks.length,0);
+    const pk=pd.reduce((a,d)=>{const s=ST[d.id]||{};return a+d.tasks.filter((_,i)=>s[i]).length;},0);
+    return`<span class="ph" style="background:${bg};color:${col}">${ph} — ${pt?Math.round(pk/pt*100):0}%</span>`;
+  }).join('');
+}
+
+function buildAlert(){
+  const m=getMissed();
+  const a=document.getElementById('alert');
+  if(!m.length){a.classList.remove('on');return}
+  a.classList.add('on');
+  document.getElementById('atitle').textContent=`${m.length} jour${m.length>1?'s':''} non complété${m.length>1?'s':''} !`;
+  document.getElementById('abody').textContent=m.map(d=>`${d.l} ${d.m} — ${d.title}`).join(' · ')+' · Clique pour compléter ou reporter.';
+}
+
+function buildHeader(){
+  const t=nowStr();
+  const d=DAYS.find(x=>x.date===t);
+  const pill=document.getElementById('pill');
+  if(d)pill.textContent='Auj. : '+d.title.slice(0,20)+(d.title.length>20?'…':'');
+  else{const n=DAYS.find(x=>x.date>t);pill.textContent=n?`Prochain : ${n.l} ${n.m}`:'🎤 Bonne chance !';}
+  const left=DAYS.filter(x=>x.date>=t).length;
+  document.getElementById('sub').textContent=`Oral le 3 avril 2025 · ${left} jour${left>1?'s':''} restant${left>1?'s':''}`;
+}
+
+function render(){buildCal();buildProg();buildAlert();buildHeader()}
+
+let curId=null;
+function openM(id){
+  const d=DAYS.find(x=>x.id===id);if(!d)return;
+  curId=id;
+  const s=ST[id]||{};
+  const rep=ST['rep_'+id]||[];
+  const allTasks=[...d.tasks,...rep];
+  const past=isPast(d.date),done=isDone(id),missed=past&&!done&&d.phase!=='Jour J';
+
+  const rows=allTasks.map((t,i)=>`
+    <div class="t-row">
+      <input type="checkbox" class="t-cb" id="cb${id}_${i}" ${s[i]?'checked':''} onchange="tog('${id}',${i},this.checked)">
+      <label class="t-lbl ${s[i]?'done':''}" for="cb${id}_${i}">${i>=d.tasks.length?'↻ ':''}${t}</label>
+    </div>`).join('');
+
+  let notice='';
+  if(rep.length)notice=`<div class="m-rep-notice">↻ ${rep.length} tâche${rep.length>1?'s':''} reportée${rep.length>1?'s':''} depuis un jour précédent.</div>`;
+  if(missed)notice+=`<div class="m-warn">⚠️ Ce jour n'est pas encore complété. Coche les tâches, ou reporte au lendemain.</div>`;
+
+  let btns=`<button class="btn" onclick="closeM()">Fermer</button>`;
+  if(missed){
+    btns=`<button class="btn btn-ok" onclick="markAll('${id}')">Tout cocher ✓</button>
+          <button class="btn btn-rep" onclick="report('${id}')">Reporter au lendemain ↻</button>
+          <button class="btn" onclick="closeM()">Fermer</button>`;
+  }
+
+  document.getElementById('modal').innerHTML=`
+    <div class="m-head"><h2>${d.phase==='Jour J'?'🎤 ':''}${d.title}</h2><button class="m-close" onclick="closeM()">✕</button></div>
+    <div class="m-meta">
+      <span class="m-badge" style="background:${d.bg};color:${d.col}">${d.phase}</span>
+      <span class="m-time">${d.l} ${d.m}</span>
+      ${d.time?`<span class="m-time">${d.time}</span>`:''}
+    </div>
+    <div class="m-body">
+      ${notice}
+      <div class="m-sec">Tâches du jour</div>
+      ${rows}
+      <div class="tip">${d.tip}</div>
+      <div class="m-actions">${btns}</div>
+    </div>`;
+  document.getElementById('ov').classList.add('on');
+}
+
+function closeM(){document.getElementById('ov').classList.remove('on');curId=null;render()}
+function ovck(e){if(e.target===document.getElementById('ov'))closeM()}
+
+function tog(id,i,val){
+  if(!ST[id])ST[id]={};
+  ST[id][i]=val;
+  save();
+  const lbl=document.querySelector(`label[for="cb${id}_${i}"]`);
+  if(lbl)lbl.classList.toggle('done',val);
+  buildProg();buildCal();buildAlert();
+}
+
+function markAll(id){
+  const d=DAYS.find(x=>x.id===id);if(!d)return;
+  const rep=ST['rep_'+id]||[];
+  const total=d.tasks.length+rep.length;
+  if(!ST[id])ST[id]={};
+  for(let i=0;i<total;i++)ST[id][i]=true;
+  save();closeM();
+}
+
+function report(id){
+  const d=DAYS.find(x=>x.id===id);if(!d)return;
+  const s=ST[id]||{};
+  const rep=ST['rep_'+id]||[];
+  const allTasks=[...d.tasks,...rep];
+  const undone=allTasks.filter((_,i)=>!s[i]);
+  if(!undone.length){closeM();return}
+  const idx=DAYS.findIndex(x=>x.id===id);
+  const next=DAYS[idx+1];
+  if(!next){closeM();return}
+  ST['rep_'+next.id]=[...(ST['rep_'+next.id]||[]),...undone];
+  if(!ST[id])ST[id]={};
+  allTasks.forEach((_,i)=>{ST[id][i]=true});
+  save();closeM();
+}
+
+render();
+</script>
